@@ -45,6 +45,5 @@
             "type": "boolean",
             "description": "If this is set, managed settings will overide local ones."
         }
-    },
-    "additionalProperties": false
+    }
 }
