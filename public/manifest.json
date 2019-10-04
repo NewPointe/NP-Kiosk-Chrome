@@ -1,7 +1,7 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "NP Check-in for Rock RMS",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "manifest_version": 2,
     "icons": {
         "128": "images/icon_128.png",
@@ -38,5 +38,13 @@
     },
     "storage": {
         "managed_schema": "managed-schema.json"
+    },
+    "commands": {
+        "show-settings": {
+          "suggested_key": {
+            "default": "Ctrl+Shift+Period"
+          },
+          "description": "Shows the kiosk settings"
+        }
     }
 }
