@@ -1,0 +1,39 @@
+{
+    "update_url": "https://clients2.google.com/service/update2/crx",
+    "name": "NP Check-in for Rock RMS",
+    "version": "1.2.0",
+    "manifest_version": 2,
+    "icons": {
+        "128": "images/icon_128.png",
+        "96": "images/icon_96.png",
+        "48": "images/icon_48.png"
+    },
+    "app": {
+        "background": {
+            "scripts": [
+                "scripts/background.js"
+            ],
+            "persistent": false
+        }
+    },
+    "permissions": [
+        "webview",
+        "power",
+        "storage",
+        "https://*/"
+    ],
+    "kiosk_enabled": true,
+    "webview": {
+        "partitions": [
+            {
+                "name": "rockcheckin",
+                "accessible_resources": ["scripts/client-api.js"]
+            }
+        ]
+    },
+    "sockets": {
+        "tcp": {
+            "connect": [ "*" ]
+        }
+    }
+}

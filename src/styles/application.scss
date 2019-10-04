@@ -1,0 +1,44 @@
+
+@import "variables";
+@import "../../node_modules/bootstrap/scss/bootstrap";
+@import "spa-core";
+@import "spinner";
+
+.form-group > label {
+    font-weight: bold;
+}
+
+.form-control::placeholder {
+    color: #aeaeae;
+}
+
+.alert {
+    border-width: 0;
+    border-top-width: 3px;
+    box-shadow: 0 0 0 1px rgba(63,63,68,0.05), 0 1px 3px 0 rgba(63,63,68,0.15);
+}
+
+html,
+body,
+webview {
+    height: 100%;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.flex-vertical-center {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-top: 2em;
+    padding-bottom: 2em;
+}
+
+.flex-vertical-center::before,
+.flex-vertical-center::after {
+    content: '';
+    margin: auto;
+}
+
