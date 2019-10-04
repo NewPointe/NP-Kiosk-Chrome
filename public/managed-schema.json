@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Managed Configuration",
+    "description": "The managed configuration for the NP Check-in for Rock RMS app.",
+    "type": "object",
+    "properties": {
+        "checkin_address": {
+            "type": "string",
+            "format": "url",
+            "description": "The address of your check-in server."
+        },
+        "enable_label_caching": {
+            "type": "boolean",
+            "description": "If labels should be cached locally."
+        },
+        "cache_duration": {
+            "type": "integer",
+            "description": "The number of seconds to cache a label."
+        },
+        "printer_override": {
+            "type": "string",
+            "description": "Overrides the ip address to print to."
+        },
+        "printer_timeout": {
+            "type": "integer",
+            "description": "The amount of time to wait for a print job to complete."
+        },
+        "bluetooth_printing": {
+            "type": "boolean",
+            "description": "If bluetooth printing should be enabled."
+        },
+        "enable_inapp_settings": {
+            "type": "boolean",
+            "description": "If the in-app settings should be enabled."
+        },
+        "inapp_settings_delay": {
+            "type": "integer",
+            "description": "The number of seconds for the guesture to open the in-app settings"
+        },
+        "inapp_settings_pin": {
+            "type": "string",
+            "description": "The pin to use to lock the in-app settings"
+        },
+        "managed_overrides_local": {
+            "type": "boolean",
+            "description": "If this is set, managed settings will overide local ones."
+        }
+    },
+    "additionalProperties": false
+}
