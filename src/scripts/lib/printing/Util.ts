@@ -5,16 +5,16 @@ export function mergeLabelContent(labelContent: string, mergeFields: Record<stri
         if (value.length > 0) {
 
             // merge the contents of the field
-            labelContent = labelContent.replace(new RegExp(`(?<=\\^FD)(${key})(?=\\^FS)`), value);
+            labelContent = labelContent.replace(new RegExp(`(?<=\\^FD)(${key})(?=\\^FS)`, "g"), value);
 
         }
         else {
 
             // remove the field origin (used for inverting backgrounds)
-            labelContent = labelContent.replace(new RegExp(`\\^FO.*\\^FS\\s*(?=\\^FT.*\\^FD${key}\\^FS)`), "");
+            labelContent = labelContent.replace(new RegExp(`\\^FO.*\\^FS\\s*(?=\\^FT.*\\^FD${key}\\^FS)`, "g"), "");
 
             // remove the field data (the actual value)
-            labelContent = labelContent.replace(new RegExp(`\\^FD${key}\\^FS`), "");
+            labelContent = labelContent.replace(new RegExp(`\\^FD${key}\\^FS`, "g"), "");
 
         }
     }
