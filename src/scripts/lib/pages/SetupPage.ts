@@ -22,7 +22,7 @@ export class SetupPage implements IScreen {
 
         // Make sure it's valid
         try {
-            if (new URL(this.checkinAddress)) {
+            if (new URL(ensureUrlProtocol(this.checkinAddress))) {
 
                 // Start checkin
                 await this.app.navigateInPlace("checkin");
