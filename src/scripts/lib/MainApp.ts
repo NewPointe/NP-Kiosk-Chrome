@@ -4,6 +4,7 @@ import { SettingsPage, SetupPage, LoadingScreen, CheckinPage } from "./pages";
 import { ZebraPrintService, ICheckinLabel, IPrintJob, mergeLabelContent } from "./printing";
 import { MessagingService, MessageType, IMessage } from "./messaging";
 import { IDBCache, ICacheItem } from "./IDBCache";
+import { ZabbixAgent } from "./zabbix/ZabbixAgent";
 
 export class MainApp extends App {
 
@@ -31,6 +32,8 @@ export class MainApp extends App {
 
     private settingsTriggerTimeout: number | null = null;
 
+    protected zabbixAgent: ZabbixAgent | null = null;
+
     /**
      * Creates a new App
      * @param appRoot The root HTML element for the app
@@ -55,6 +58,11 @@ export class MainApp extends App {
 
         chrome.commands.onCommand.addListener((command) => {
             if (command === 'show-settings') this.navigateInPlace("settings");
+        });
+
+        this.zabbixAgent = new ZabbixAgent({
+            Hostname: "test",
+            PassiveServers: "127.0.0.1"
         });
 
     }

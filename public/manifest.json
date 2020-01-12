@@ -20,7 +20,10 @@
         "webview",
         "power",
         "storage",
-        "https://*/"
+        "system.cpu",
+        "system.memory",
+        "https://*/",
+        "file://*"
     ],
     "kiosk_enabled": true,
     "webview": {
@@ -34,6 +37,9 @@
     "sockets": {
         "tcp": {
             "connect": [ "*" ]
+        },
+        "tcpServer": {
+            "listen": "*"
         }
     },
     "storage": {
