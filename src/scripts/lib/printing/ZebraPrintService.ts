@@ -1,4 +1,4 @@
-import { TcpSocket } from "./TcpSocket";
+import { TcpSocket } from "../sockets";
 import { groupBy } from "../Util";
 
 export interface IPrintJob {
@@ -34,7 +34,7 @@ export class ZebraPrintService {
                     try {
 
                         for (const job of printerJobs) {
-                            await socket.writeString(job.printData);
+                            await socket.send(job.printData);
                         }
 
                     }
@@ -51,7 +51,7 @@ export class ZebraPrintService {
         }
         finally {
 
-            await socket.destroy();
+            await socket.close();
 
         }
 
@@ -69,7 +69,7 @@ export class ZebraPrintService {
 
             try {
 
-                await socket.writeString(job.printData);
+                await socket.send(job.printData);
 
             }
             finally {
@@ -81,7 +81,7 @@ export class ZebraPrintService {
         }
         finally {
 
-            await socket.destroy();
+            await socket.close();
 
         }
 

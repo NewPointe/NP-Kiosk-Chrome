@@ -47,7 +47,7 @@ export class Client extends MessagingService {
 
     }
 
-    private handleFailMessage(message: IMessage) {
+    private handleFailMessage(message: IMessage<Error>) {
 
         if (message.correlationId) {
 
@@ -55,7 +55,7 @@ export class Client extends MessagingService {
             const correlation = this.messageCorrelations.get(message.correlationId);
 
             // Reject it
-            if (correlation) correlation.reject(new Error(message.data.message));
+            if (correlation) correlation.reject(new Error(message.data ? message.data.message : "An unknown error occured"));
 
             // Remove it's correlation
             this.messageCorrelations.delete(message.correlationId);

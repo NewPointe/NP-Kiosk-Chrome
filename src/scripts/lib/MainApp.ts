@@ -54,19 +54,19 @@ export class MainApp extends App {
         this.messagingService.on(MessageType.SET_APP_SETTING, this.handleSetSettingMessage.bind(this));
 
         chrome.commands.onCommand.addListener((command) => {
-            if(command === 'show-settings') this.navigateInPlace("settings");
+            if (command === 'show-settings') this.navigateInPlace("settings");
         });
 
     }
 
     private handleTouchEvent(event: TouchEvent) {
 
-        if(event.touches.length === 5) {
-            if(!this.settingsTriggerTimeout) {
+        if (event.touches.length === 5) {
+            if (!this.settingsTriggerTimeout) {
                 this.settingsTriggerTimeout = window.setTimeout(this.handleSettingsTrigger.bind(this), 1000 * this.settingsTriggerDelay);
             }
         }
-        else if(this.settingsTriggerTimeout) {
+        else if (this.settingsTriggerTimeout) {
             window.clearTimeout(this.settingsTriggerTimeout);
             this.settingsTriggerTimeout = null;
         }
@@ -77,69 +77,54 @@ export class MainApp extends App {
         this.navigateInPlace("settings");
     }
 
-    private async handlePrintMessage(message: IMessage<ICheckinLabel[]>) {
-
-        try {
-
-            if (message.data) {
-
-                const printJobs = await this.getAndMergeLabels(message.data);
-
-                await this.printService.printMultiple(printJobs);
-
-                this.messagingService.sendMessage({ type: MessageType.ACTION_SUCCESS, correlationId: message.correlationId });
-
-            }
-
-        }
-        catch (e) {
-
-            this.messagingService.sendMessage({ type: MessageType.ACTION_ERROR, correlationId: message.correlationId, data: e });
-
-        }
-
+    private handlePrintMessage(message: IMessage<ICheckinLabel[]>) {
+        this.handlePrintMessageAsync(message).then(() => { },
+            (error: Error) => this.messagingService.sendMessage({ type: MessageType.ACTION_ERROR, correlationId: message.correlationId, data: error })
+        );
     }
 
-    private async handleGetSettingMessage(message: IMessage<{ key: Setting; }>) {
+    private async handlePrintMessageAsync(message: IMessage<ICheckinLabel[]>) {
+        if (message.data) {
 
-        try {
+            const printJobs = await this.getAndMergeLabels(message.data);
 
-            if (message.data) {
+            await this.printService.printMultiple(printJobs);
 
-                const value = await this.settingsService.get(message.data.key, null);
-
-                this.messagingService.sendMessage({ type: MessageType.ACTION_SUCCESS, correlationId: message.correlationId, data: value });
-
-            }
+            this.messagingService.sendMessage({ type: MessageType.ACTION_SUCCESS, correlationId: message.correlationId });
 
         }
-        catch (e) {
-
-            this.messagingService.sendMessage({ type: MessageType.ACTION_ERROR, correlationId: message.correlationId, data: e });
-
-        }
-
     }
 
-    private async handleSetSettingMessage(message: IMessage<{ key: Setting; value: unknown }>) {
+    private handleGetSettingMessage(message: IMessage<{ key: Setting; }>) {
+        this.handleGetSettingMessageAsync(message).then(() => { },
+            (error: Error) => this.messagingService.sendMessage({ type: MessageType.ACTION_ERROR, correlationId: message.correlationId, data: error })
+        );
+    }
 
-        try {
+    private async handleGetSettingMessageAsync(message: IMessage<{ key: Setting; }>) {
+        if (message.data) {
 
-            if (message.data) {
+            const value = await this.settingsService.get(message.data.key, null);
 
-                await this.settingsService.set(message.data.key, message.data.value as any);
-
-                this.messagingService.sendMessage({ type: MessageType.ACTION_SUCCESS, correlationId: message.correlationId });
-
-            }
-
-        }
-        catch (e) {
-
-            this.messagingService.sendMessage({ type: MessageType.ACTION_ERROR, correlationId: message.correlationId, data: e });
+            this.messagingService.sendMessage({ type: MessageType.ACTION_SUCCESS, correlationId: message.correlationId, data: value });
 
         }
+    }
 
+    private handleSetSettingMessage(message: IMessage<{ key: Setting; value: unknown }>) {
+        this.handleSetSettingMessageAsync(message).then(() => { },
+            (error: Error) => this.messagingService.sendMessage({ type: MessageType.ACTION_ERROR, correlationId: message.correlationId, data: error })
+        );
+    }
+
+    private async handleSetSettingMessageAsync(message: IMessage<{ key: Setting; value: unknown }>) {
+        if (message.data) {
+
+            await this.settingsService.set(message.data.key, message.data.value as any);
+
+            this.messagingService.sendMessage({ type: MessageType.ACTION_SUCCESS, correlationId: message.correlationId });
+
+        }
     }
 
     private async getAndMergeLabels(labels: ICheckinLabel[]): Promise<IPrintJob[]> {

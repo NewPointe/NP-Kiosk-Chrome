@@ -1,16 +1,16 @@
-export type SimpleEventHandler<TData = unknown> = (data: TData) => void;
+export type SimpleEventHandler<TData = unknown> = (data: TData) => void | boolean;
 
-export class SimpleEventEmiter<TKey extends string, TData = unknown> {
+export class SimpleEventEmiter<TEventMap = any> {
 
     /** The registered event listeners. */
-    public readonly listeners = new Map<TKey, Set<SimpleEventHandler<TData>>>();
+    public readonly listeners = new Map<keyof TEventMap, Set<SimpleEventHandler<any>>>();
 
     /**
      * Registers an event handler.
      * @param event The event id.
      * @param handler The event handler.
      */
-    public on(event: TKey, handler: SimpleEventHandler<TData>) {
+    public on<TKey extends keyof TEventMap>(event: TKey, handler: SimpleEventHandler<TEventMap[TKey]>) {
         const handlers = this.listeners.get(event);
         if (handlers) handlers.add(handler);
         else this.listeners.set(event, new Set([handler]));
@@ -21,19 +21,19 @@ export class SimpleEventEmiter<TKey extends string, TData = unknown> {
      * @param event The event id.
      * @param handler The event handler.
      */
-    public off(event: TKey, handler: SimpleEventHandler<TData>) {
+    public off<TKey extends keyof TEventMap>(event: TKey, handler: SimpleEventHandler<TEventMap[TKey]>) {
         const handlers = this.listeners.get(event);
         if (handlers) handlers.delete(handler);
         if (handlers && handlers.size === 0) this.listeners.delete(event);
     }
 
     /**
-     * Emits an event to all it's registered handlers.
+     * Emits an event to all it's registered handlers in the order they were registered.
      * @param event The event id.
      * @param data The event data.
      */
-    protected emit(event: TKey, data: TData) {
+    protected emit<TKey extends keyof TEventMap>(event: TKey, data: TEventMap[TKey]): boolean | void {
         const handlers = this.listeners.get(event);
-        if (handlers) handlers.forEach(h => h(data));
+        if (handlers) return Array.from(handlers).every(h => h(data) !== false);
     }
 }

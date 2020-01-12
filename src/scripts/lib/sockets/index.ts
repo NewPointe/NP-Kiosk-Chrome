@@ -5,7 +5,7 @@
  */
 
 // @index: export * from ${relpath};
-export * from "./ICheckinLabel";
-export * from "./Util";
-export * from "./ZebraPrintService";
+export * from "./TcpError";
+export * from "./TcpServer";
+export * from "./TcpSocket";
 // /index

@@ -2068,6 +2068,7 @@ declare namespace chrome.sockets.tcp {
     }
 
     export interface SocketInfo {
+
         /**
          * The socket identifier.
          */
@@ -2120,20 +2121,30 @@ declare namespace chrome.sockets.tcp {
 
     }
 
+    /**
+    * The result of the socket creation.
+    */
+    interface CreateInfo {
+
+        /**
+        * The ID of the newly created server socket. Note that socket IDs created from this API are not compatible with socket IDs created from other APIs, such as the deprecated [socket](https://developer.chrome.com/apps/socket) API.
+        */
+        socketId: number;
+
+    }
 
     /**
      * Creates a TCP socket.
      * @param callback Called when the socket has been created.
      */
-    export function create(callback: (createInfo: { socketId: number; }) => void): void;
-
+    export function create(callback: (createInfo: CreateInfo) => void): void;
 
     /**
      * Creates a TCP socket.
      * @param properties The socket properties (optional).
      * @param callback Called when the socket has been created.
      */
-    export function create(properties: SocketProperties, callback: (createInfo: { socketId: number; }) => void): void;
+    export function create(properties: SocketProperties, callback: (createInfo: CreateInfo) => void): void;
 
     /**
      * Updates the socket properties.
@@ -2192,7 +2203,7 @@ declare namespace chrome.sockets.tcp {
      */
     export function disconnect(socketId: number, callback?: () => void): void;
 
-    interface _SecureOptions {
+    interface SecureOptions {
 
         /**
          * The minimum and maximum acceptable versions of TLS.
@@ -2221,7 +2232,23 @@ declare namespace chrome.sockets.tcp {
      * @param options Constraints and parameters for the TLS connection.
      * @param callback Called when the connection attempt is complete.
      */
-    export function secure(socketId: number, options: _SecureOptions, callback: (result: number) => void): void;
+    export function secure(socketId: number, options: SecureOptions, callback: (result: number) => void): void;
+
+    /**
+     * Result of the send method.
+     */
+    interface SendInfo {
+
+        /**
+         * The result code returned from the underlying network call. A negative value indicates an error.
+         */
+        resultCode: number;
+
+        /**
+         * The number of bytes sent (if result == 0)
+         */
+        bytesSent?: number;
+    }
 
     /**
      * Sends data on the given TCP socket.
@@ -2229,7 +2256,7 @@ declare namespace chrome.sockets.tcp {
      * @param data The data to send.
      * @param callback Called when the send operation completes.
      */
-    export function send(socketId: number, data: ArrayBuffer, callback: (sendInfo: { resultCode: number, bytesSent?: number }) => void): void;
+    export function send(socketId: number, data: ArrayBuffer, callback: (sendInfo: SendInfo) => void): void;
 
     /**
      * Closes the socket and releases the address/port the socket is bound to. Each socket created should be closed after use. The socket id is no no longer valid as soon at the function is called. However, the socket is guaranteed to be closed only when the callback is invoked.
@@ -2249,19 +2276,12 @@ declare namespace chrome.sockets.tcp {
      * Retrieves the list of currently opened sockets owned by the application.
      * @param callback Called when the list of sockets is available.
      */
-    export function getInfo(callback: (socketInfos: SocketInfo[]) => void): void;
-
-}
-
-/**
- * Event raised when data has been received for a given socket.
- */
-declare namespace chrome.sockets.tcp.onReceive {
+    export function getSockets(callback: (socketInfos: SocketInfo[]) => void): void;
 
     /**
      * The event data.
      */
-    interface _OnReceiveInfo {
+    interface OnReceiveInfo {
 
         /**
          * The socket identifier.
@@ -2275,19 +2295,15 @@ declare namespace chrome.sockets.tcp.onReceive {
 
     }
 
-    export function addListener(callback: (info: _OnReceiveInfo) => void): void;
-
-}
-
-/**
- * Event raised when a network error occured while the runtime was waiting for data on the socket address and port. Once this event is raised, the socket is set to `paused` and no more `onReceive` events are raised for this socket.
- */
-declare namespace chrome.sockets.tcp.onReceiveError {
+    /**
+     * Event raised when data has been received for a given socket.
+     */
+    export const onReceive: _EventHolder<(info: OnReceiveInfo) => void>;
 
     /**
      * The event data.
      */
-    interface _OnReceiveErrorInfo {
+    interface OnReceiveErrorInfo {
 
         /**
          * The socket identifier.
@@ -2301,7 +2317,209 @@ declare namespace chrome.sockets.tcp.onReceiveError {
 
     }
 
-    export function addListener(callback: (info: _OnReceiveErrorInfo) => void): void;
+    /**
+     * Event raised when a network error occured while the runtime was waiting for data on the socket address and port. Once this event is raised, the socket is set to `paused` and no more `onReceive` events are raised for this socket.
+     */
+    export const onReceiveError: _EventHolder<(info: OnReceiveErrorInfo) => void>;
+
+}
+
+
+//==============================//
+//   chrome.sockets.tcpServer   //
+//==============================//
+
+/**
+ * Description: Use the `chrome.sockets.tcpServer` API to create server applications using TCP connections. This API supersedes the TCP functionality previously found in the `chrome.socket` API.
+ * Availability: Since Chrome 33.
+ * Manifest: `"sockets": {...}`
+ */
+declare namespace chrome.sockets.tcpServer {
+
+    export interface SocketProperties {
+
+        /**
+         * Flag indicating if the socket is left open when the event page of the application is unloaded (see [Manage App Lifecycle](http://developer.chrome.com/apps/app_lifecycle.html)). The default value is "false." When the application is loaded, any sockets previously opened with persistent=true can be fetched with `getSockets`.
+         */
+        persistent?: boolean;
+
+        /**
+         * An application-defined string associated with the socket.
+         */
+        name?: string;
+
+    }
+
+    export interface SocketInfo {
+
+        /**
+         * The socket identifier.
+         */
+        socketId: number;
+
+        /**
+         * Flag indicating whether the socket is left open when the application is suspended (see `SocketProperties.persistent`).
+         */
+        persistent: boolean;
+
+        /**
+         * Application-defined string associated with the socket.
+         */
+        name?: string;
+
+        /**
+         * Flag indicating whether connection requests on a listening socket are dispatched through the `onAccept` event or queued up in the listen queue backlog. See `setPaused`. The default value is "false".
+         */
+        paused: boolean;
+
+        /**
+         * If the socket is listening, contains its local IPv4/6 address.
+         */
+        localAddress?: string;
+
+        /**
+         * If the socket is listening, contains its local port.
+         */
+        localPort?: number;
+
+    }
+
+    /**
+     * The result of the socket creation.
+     */
+    interface CreateInfo {
+
+        /**
+         * The ID of the newly created server socket. Note that socket IDs created from this API are not compatible with socket IDs created from other APIs, such as the deprecated [socket](https://developer.chrome.com/apps/socket) API.
+         */
+        socketId: number;
+
+    }
+
+    /**
+     * Creates a TCP server socket.
+     * @param callback Called when the socket has been created.
+     */
+    export function create(callback: (createInfo: CreateInfo) => void): void;
+
+    /**
+     * Creates a TCP server socket.
+     * @param properties The socket properties (optional).
+     * @param callback Called when the socket has been created.
+     */
+    export function create(properties: SocketProperties, callback: (createInfo: CreateInfo) => void): void;
+
+    /**
+     * Updates the socket properties.
+     * @param socketId The socket identifier.
+     * @param properties The properties to update.
+     * @param callback Called when the properties are updated.
+     */
+    export function update(socketId: number, properties: SocketProperties, callback?: () => void): void;
+
+    /**
+     * Enables or disables a listening socket from accepting new connections. When paused, a listening socket accepts new connections until its backlog (see `listen` function) is full then refuses additional connection requests. `onAccept` events are raised only when the socket is un-paused.
+     * @param socketId
+     * @param paused
+     * @param callback Callback from the `setPaused` method.
+     */
+    export function setPaused(socketId: number, paused: boolean, callback?: () => void): void
+
+    /**
+     * Called when listen operation completes.
+     * @callback listenCallback
+     * @param result The result code returned from the underlying network call. A negative value indicates an error.
+     */
+
+    /**
+     * Listens for connections on the specified port and address. If the port/address is in use, the callback indicates a failure.
+     * @param socketId The socket identifier.
+     * @param address The address of the local machine.
+     * @param port The port of the local machine. When set to 0, a free port is chosen dynamically. The dynamically allocated port can be found by calling getInfo.
+     * @param backlog Length of the socket's listen queue. The default value depends on the Operating System (SOMAXCONN), which ensures a reasonable queue length for most applications.
+     * @param {listenCallback} callback Called when listen operation completes.
+     */
+    export function listen(socketId: number, address: string, port: number, backlog: number, callback: (result: number) => void): void;
+
+    /**
+     * Listens for connections on the specified port and address. If the port/address is in use, the callback indicates a failure.
+     * @param socketId The socket identifier.
+     * @param address The address of the local machine.
+     * @param port The port of the local machine. When set to 0, a free port is chosen dynamically. The dynamically allocated port can be found by calling getInfo.
+     * @param {listenCallback} callback Called when listen operation completes.
+     */
+    export function listen(socketId: number, address: string, port: number, callback: (result: number) => void): void;
+
+    /**
+     * Disconnects the listening socket, i.e. stops accepting new connections and releases the address/port the socket is bound to. The socket identifier remains valid, e.g. it can be used with `listen` to accept connections on a new port and address.
+     * @param socketId The socket identifier.
+     * @param callback Called when the disconnect attempt is complete.
+     */
+    export function disconnect(socketId: number, callback?: () => void): void;
+
+    /**
+     * Disconnects and destroys the socket. Each socket created should be closed after use. The socket id is no longer valid as soon at the function is called. However, the socket is guaranteed to be closed only when the callback is invoked.
+     * @param socketId The socket identifier.
+     * @param callback Called when the `close` operation completes.
+     */
+    export function close(socketId: number, callback?: () => void): void;
+
+    /**
+     * Retrieves the state of the given socket.
+     * @param socketId The socket identifier.
+     * @param callback Called when the socket state is available.
+     */
+    export function getInfo(socketId: number, callback: (socketInfo: SocketInfo) => void): void;
+
+    /**
+     * Retrieves the list of currently opened sockets owned by the application.
+     * @param callback Called when the list of sockets is available.
+     */
+    export function getSockets(callback: (socketInfos: SocketInfo[]) => void): void;
+
+    /**
+     * The event data.
+     */
+    interface OnAcceptInfo {
+
+        /**
+         * The server socket identifier.
+         */
+        socketId: number;
+
+        /**
+         * The client socket identifier, i.e. the socket identifier of the newly established connection. This socket identifier should be used only with functions from the `chrome.sockets.tcp` namespace. Note the client socket is initially paused and must be explictly un-paused by the application to start receiving data.
+         */
+        clientSocketId: number;
+
+    }
+
+    /**
+     * Event raised when a connection has been made to the server socket.
+     */
+    export const onAccept: _EventHolder<(info: OnAcceptInfo) => void>;
+
+    /**
+     * The event data.
+     */
+    interface OnAcceptErrorInfo {
+
+        /**
+         * The server socket identifier.
+         */
+        socketId: number;
+
+        /**
+         * The result code returned from the underlying network call.
+         */
+        resultCode: number;
+
+    }
+
+    /**
+     * Event raised when a network error occured while the runtime was waiting for new connections on the socket address and port. Once this event is raised, the socket is set to `paused` and no more `onAccept` events are raised for this socket until the socket is resumed.
+     */
+    export const onAcceptError: _EventHolder<(info: OnAcceptErrorInfo) => void>;
 
 }
 

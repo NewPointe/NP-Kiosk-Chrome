@@ -3,8 +3,20 @@ import { isMessage } from "./Util";
 import { MessageType } from "./MessageType";
 import { IMessage, IMessagePartial } from "./IMessage";
 import { generateGuid } from "../Util";
+import { Setting } from "../SettingsService";
+import { ICheckinLabel } from "../printing";
 
-export class MessagingService extends SimpleEventEmiter<MessageType, IMessage> {
+type MessageTypeDataMap = {
+    [key: string]: IMessage,
+    [MessageType.ACTION_ERROR]: IMessage<Error>,
+    [MessageType.ACTION_SUCCESS]: IMessage,
+    [MessageType.GET_APP_SETTING]: IMessage<{ key: Setting; }>,
+    [MessageType.PRINT_LABEL]: IMessage<ICheckinLabel[]>,
+    [MessageType.SET_APP_SETTING]: IMessage<{ key: Setting; value: unknown }>,
+    [MessageType.SHOW_SETTINGS]: IMessage,
+}
+
+export class MessagingService extends SimpleEventEmiter<MessageTypeDataMap> {
 
     private peerWindow?: Window;
     private peerOrigin?: string;
