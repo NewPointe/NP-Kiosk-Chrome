@@ -1,10 +1,16 @@
-/// <references path="./chrome.d.ts" />
-
-
+/**
+ * The background service that manages the app lifecycle
+ */
 class BackgroundService {
 
+    /**
+     * The main winfow of the app
+     */
     private mainWindow?: chrome.app.window.AppWindow | null;
 
+    /**
+     * Creates a new background service
+     */
     constructor() {
 
         // Bind the launch event
@@ -12,6 +18,9 @@ class BackgroundService {
 
     }
 
+    /**
+     * Handles the app being launched
+     */
     private handleAppLaunched() {
 
         // Keep the screen awake while the app window is open
@@ -31,12 +40,17 @@ class BackgroundService {
 
     }
 
+    /**
+     * Handles the app window being closed
+     */
     private handleAppWindowClosed() {
 
+        // Release the screen keepawake
         chrome.power.releaseKeepAwake();
 
     }
 
 }
 
+// Start the background service
 new BackgroundService();

@@ -69,7 +69,7 @@ export class CheckinPage implements IScreen {
         }
 
         // Bind the webview to the messaging service
-        this.app.messagingService.bindTo(this.webview.contentWindow, getOrigin(this.checkinAddress));
+        this.app.bindMessaging(this.webview.contentWindow, getOrigin(this.checkinAddress));
 
     }
 

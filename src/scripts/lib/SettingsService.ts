@@ -25,8 +25,6 @@ export type SettingTypeMap = {
     [Setting.MANAGED_OVERRIDES_LOCAL]: boolean
 }
 
-type SettingOfType<T> = { [K in keyof SettingTypeMap]: SettingTypeMap[K] extends T ? K : never }[keyof SettingTypeMap];
-
 type StorableType = boolean | number | string | StorableTypeArray | Date | RegExp;
 interface StorableTypeArray extends Array<StorableType> { }
 
@@ -72,7 +70,7 @@ export class SettingsService {
 
     }
 
-    public async set<T extends StorableType>(key: SettingOfType<T>, value: T | null): Promise<void> {
+    public async set<T extends Setting>(key: T, value: SettingTypeMap[T] | null): Promise<void> {
         return new Promise((resolve, reject) => {
 
             if(value !== null) {

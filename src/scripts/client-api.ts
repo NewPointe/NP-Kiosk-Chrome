@@ -1,124 +1,42 @@
 'use strict';
 
-import { IMessage } from "./lib/messaging/IMessage";
-import { MessageType } from "./lib/messaging/MessageType";
-import { MessagingService } from "./lib/messaging/MessagingService";
-import { ICheckinLabel } from "./lib/printing/ICheckinLabel";
-import { generateGuid } from "./lib/Util";
 import { Setting } from "./lib/SettingsService";
+import { AppApi } from "./lib/MainApp";
+import * as Comlink from 'comlink';
 
 const appSettingMap: Record<string, Setting> = {
     "checkin_address": Setting.CHECKIN_ADDRESS
 };
 
-interface MessageCorrelationData<TReq = any, TRes = any> {
-    message: IMessage<TReq>;
-    resolve: (value?: TRes | PromiseLike<TRes>) => void;
-    reject: (reason?: any) => void;
-}
+export class Client {
 
-export class Client extends MessagingService {
+    public appApi?: Comlink.Remote<AppApi>;
 
-    private messageCorrelations = new Map<string, MessageCorrelationData>();
 
     constructor() {
 
-        super();
-
-        this.on(MessageType.ACTION_SUCCESS, this.handleSuccessMessage.bind(this));
-        this.on(MessageType.ACTION_ERROR, this.handleFailMessage.bind(this));
+        window.addEventListener('message', this.handleWindowMessage.bind(this));
 
     }
 
-    private handleSuccessMessage(message: IMessage) {
+    private handleWindowMessage(event: MessageEvent) {
 
-        if (message.correlationId) {
+        console.log("Recieved Message:");
+        console.log(event.data);
 
-            // Get the correlated message
-            const correlation = this.messageCorrelations.get(message.correlationId);
+        // Make sure it's a valid message
+        if (event.data) {
 
-            // Resolve it
-            if (correlation) correlation.resolve(message.data);
+            // Check if it's an init message
+            if(event.data === "NP_CHECKIN_INIT_API") {
 
-            // Remove it's correlation
-            this.messageCorrelations.delete(message.correlationId);
+
+                this.appApi = Comlink.wrap<AppApi>(Comlink.windowEndpoint(event.source as Window, undefined, event.origin));
+
+            }
 
         }
 
-    }
-
-    private handleFailMessage(message: IMessage<Error>) {
-
-        if (message.correlationId) {
-
-            // Get the correlated message
-            const correlation = this.messageCorrelations.get(message.correlationId);
-
-            // Reject it
-            if (correlation) correlation.reject(new Error(message.data ? message.data.message : "An unknown error occured"));
-
-            // Remove it's correlation
-            this.messageCorrelations.delete(message.correlationId);
-
-        }
-
-    }
-
-    public async printLabels(data: ICheckinLabel[]): Promise<void> {
-        return new Promise((resolve, reject) => {
-
-            // Build the message
-            const message = {
-                type: MessageType.PRINT_LABEL,
-                correlationId: generateGuid(),
-                data
-            };
-
-            // Save the message data so we can track responses
-            this.messageCorrelations.set(message.correlationId, { message, resolve, reject });
-
-            // Send or queue the message
-            this.sendMessage(message);
-
-        });
-    }
-
-    public async getSetting(data: { key: Setting; }): Promise<void> {
-        return new Promise((resolve, reject) => {
-
-            // Build the message
-            const message = {
-                type: MessageType.GET_APP_SETTING,
-                correlationId: generateGuid(),
-                data
-            };
-
-            // Save the message data so we can track responses
-            this.messageCorrelations.set(message.correlationId, { message, resolve, reject });
-
-            // Send or queue the message
-            this.sendMessage(message);
-
-        });
-    }
-
-    public async setSetting(data: { key: Setting; value: unknown }): Promise<void> {
-        return new Promise((resolve, reject) => {
-
-            // Build the message
-            const message = {
-                type: MessageType.SET_APP_SETTING,
-                correlationId: generateGuid(),
-                data
-            };
-
-            // Save the message data so we can track responses
-            this.messageCorrelations.set(message.correlationId, { message, resolve, reject });
-
-            // Send or queue the message
-            this.sendMessage(message);
-
-        });
     }
 
 }
@@ -130,7 +48,9 @@ export class Client extends MessagingService {
     window.hasRockCheckinClientAPI = true;
 
     // Create a new messenger
-    const RockAPIMessenger = new Client();
+    const client = new Client();
+
+    (window as any).client = client;
 
     // Set up the API
 
@@ -138,7 +58,7 @@ export class Client extends MessagingService {
     if (!window.external) (window as any).external = {};
     window.external.PrintLabels = (labelsJson) => {
 
-        RockAPIMessenger.printLabels(JSON.parse(labelsJson));
+        client.appApi?.printLabels(JSON.parse(labelsJson));
 
     };
 
@@ -148,7 +68,7 @@ export class Client extends MessagingService {
 
         if (classname === "ZebraPrint" && method === "printTags") {
 
-            RockAPIMessenger.printLabels(JSON.parse(args[0])).then(success, fail);
+            client.appApi?.printLabels(JSON.parse(args[0])).then(success, fail);
 
         }
         else if (classname === "ApplicationPreferences") {
@@ -157,7 +77,7 @@ export class Client extends MessagingService {
 
                 const key = appSettingMap[args[0].key];
 
-                if(key) RockAPIMessenger.getSetting({ key }).then(success, fail);
+                if(key) client.appApi?.getAppSetting( key ).then(success, fail);
 
             }
             else if (method === "setSetting") {
@@ -166,7 +86,7 @@ export class Client extends MessagingService {
                 const key = appSettingMap[args[0].key];
                 const value = args[0].value;
 
-                if(key)  RockAPIMessenger.setSetting({ key, value }).then(success, fail);
+                if(key)  client.appApi?.setAppSetting( key, value ).then(success, fail);
 
             }
 
@@ -178,7 +98,7 @@ export class Client extends MessagingService {
     if (!window.ZebraPrintPlugin) window.ZebraPrintPlugin = {};
     window.ZebraPrintPlugin.printTags = (labelJson, success, fail) => {
 
-        RockAPIMessenger.printLabels(JSON.parse(labelJson)).then(success, fail);
+        client.appApi?.printLabels(JSON.parse(labelJson)).then(success, fail);
 
     };
 
