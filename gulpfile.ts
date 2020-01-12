@@ -16,6 +16,7 @@ import named from 'vinyl-named';
 import gulp_sass from 'gulp-sass';
 import node_sass from 'node-sass';
 import gulp_zip from 'gulp-zip';
+import * as jsonc from 'jsonc-parser';
 
 import webpackConfig from './webpack.config';
 
@@ -89,6 +90,18 @@ export function clean() {
     return del("./dist");
 }
 clean.description = "Cleans the build folders";
+
+/**
+ * Syncs the app's manifest.json version to match package.json
+ */
+export async function sync_manifest_version() {
+    const packageJson = await readJson<Package>("./package.json");
+    const manifestString = await fs.promises.readFile('./public/manifest.json', "utf-8");
+    const edits = jsonc.modify(manifestString, ["version"], packageJson.version, { formattingOptions: {} });
+    const newManifestString = jsonc.applyEdits(manifestString, edits);
+    await fs.promises.writeFile('./public/manifest.json', newManifestString, "utf-8");
+}
+sync_manifest_version.description = "Cleans the build folders";
 
 /**
  * Compiles TypeScript files using webpack
@@ -185,6 +198,6 @@ watch.description = "Watches all files";
 export const build = gulp.parallel(sass, typescript);
 build.description = "Builds all files";
 
-const defaultTask = gulp.series(clean, copy, build, packageapp);
+const defaultTask = gulp.series(clean, sync_manifest_version, copy, build, packageapp);
 defaultTask.description = "Builds and packages the app";
 export default defaultTask;
