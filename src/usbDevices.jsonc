@@ -19,6 +19,9 @@
     { "vendorId": "0a5f", "productId": "008c" },
 
     // GC420d
-    { "vendorId": "0a5f", "productId": "00d1" }
+    { "vendorId": "0a5f", "productId": "00d1" },
+
+    // ZD500
+    { "vendorId": "0a5f", "productId": "0110" }
 
 ]

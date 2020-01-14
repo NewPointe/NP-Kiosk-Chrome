@@ -117,6 +117,12 @@ sync_manifest_version.description = "Syncs the app's manifest.json version to ma
  */
 export async function sync_usb_ids() {
     const usbDevices = await readJson<any[]>("./src/usbDevices.jsonc");
+    for (const device of usbDevices) {
+        const props = Object.getOwnPropertyNames(device) as Array<keyof typeof device>;
+        for (const prop of props) {
+            if(typeof device[prop] === 'string') device[prop] = Number.parseInt(device[prop], 16);
+        }
+    }
     const manifestString = await fs.promises.readFile('./public/manifest.json', "utf-8");
     const manifestJson = jsonc.parse(manifestString) as Manifest;
     let usbDevicesIndex = manifestJson.permissions.findIndex(p => typeof p === 'object' && 'usbDevices' in p);
