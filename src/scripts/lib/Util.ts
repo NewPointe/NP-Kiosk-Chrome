@@ -94,6 +94,8 @@ export function promisifyChrome<T1, TResult>(fn: (arg1: T1, callback: (result: T
 export function promisifyChrome<T1>(fn: (arg1: T1, callback: () => void) => void): (arg1: T1) => Promise<void>;
 export function promisifyChrome<T1, T2, TResult>(fn: (arg1: T1, arg2: T2, callback: (result: TResult) => void) => void): (arg1: T1, arg2: T2) => Promise<TResult>;
 export function promisifyChrome<T1, T2>(fn: (arg1: T1, arg2: T2, callback: () => void) => void): (arg1: T1, arg2: T2) => Promise<void>;
+export function promisifyChrome<T1, T2, T3, TResult>(fn: (arg1: T1, arg2: T2, arg3: T3, callback: (result: TResult) => void) => void): (arg1: T1, arg2: T2, arg3: T3) => Promise<TResult>;
+export function promisifyChrome<TFunction extends Function, TResult>(fn: Function): (...args: unknown[]) => Promise<TResult>;
 export function promisifyChrome(fn: Function): Function {
     return (...args: unknown[]) => new Promise((resolve, reject) => fn(...args, (result: unknown) => chrome.runtime.lastError ? reject(chrome.runtime.lastError) : resolve(result)));
 }

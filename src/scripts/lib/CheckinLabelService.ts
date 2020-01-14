@@ -1,6 +1,6 @@
 import { IDBCache, ICacheItem } from "./IDBCache";
 import { SettingsService, Setting } from "./SettingsService";
-import { IPrintJob } from "./printing/ZebraPrintService";
+import { PrintJob } from "./printing/PrintService";
 
 export interface CheckinLabelData {
     FileGuid: string;
@@ -38,25 +38,45 @@ export class CheckinLabelService {
      * Gets and merges the labels into print jobs
      * @param labels The labels to get and merge
      */
-    public async getAndMergeLabels(labels: CheckinLabelData[]): Promise<IPrintJob[]> {
+    public async getAndMergeLabels(labels: CheckinLabelData[]): Promise<PrintJob[]> {
 
         const printerOverride = await this.settingsService.get(Setting.PRINTER_OVERRIDE, null);
         const cacheEnabled = await this.settingsService.get(Setting.ENABLE_LABEL_CACHING, true);
         const cacheTime = await this.settingsService.get(Setting.CACHE_DURATION, 1800);
 
-        const printJobs: IPrintJob[] = [];
+        const printJobs = new Map<string, PrintJob>();
+
+        const textEncoder = new TextEncoder();
 
         for (const label of labels) {
 
             const labelContent = await this.getLabelContent(label, cacheEnabled, cacheTime);
-            printJobs.push({
-                address: printerOverride || label.PrinterAddress,
-                printData: this.mergeLabelContent(labelContent, label.MergeFields)
+            const labelPrinterConnection = printerOverride || label.PrinterAddress;
+
+            // Get the job for this connection
+            let job = printJobs.get(labelPrinterConnection);
+
+            // If the job doesn't exist, create it
+            if (!job) {
+                job = {
+                    connection: {
+                        type: "tcp",
+                        connection: labelPrinterConnection
+                    },
+                    documents: []
+                };
+                printJobs.set(labelPrinterConnection, job);
+            }
+
+            // Add the document to the job
+            job.documents.push({
+                name: "",
+                data: textEncoder.encode(this.mergeLabelContent(labelContent, label.MergeFields)).buffer
             });
 
         }
 
-        return printJobs;
+        return [...printJobs.values()];
 
     }
 

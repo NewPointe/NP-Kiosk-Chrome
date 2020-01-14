@@ -1,6 +1,5 @@
-import { IPrintJob } from "./printing/ZebraPrintService";
-import { promisifyChrome } from "./Util";
-
+import { PrintService, PrinterConnectionInfo, Printer, PrintJob } from './PrintService';
+import { promisifyChrome } from '../Util';
 
 const getDevices = promisifyChrome(chrome.usb.getDevices);
 const getUserSelectedDevices = promisifyChrome(chrome.usb.getUserSelectedDevices);
@@ -11,22 +10,40 @@ const bulkTransfer = promisifyChrome(chrome.usb.bulkTransfer);
 const releaseInterface = promisifyChrome(chrome.usb.releaseInterface);
 const closeDevice = promisifyChrome(chrome.usb.closeDevice);
 
-export class USBPrintService {
+function usbDeviceToPrinter(device: chrome.usb.Device): Printer {
+    return {
+        type: "usb",
+        name: device.productName,
+        connection: device.serialNumber,
+        manufacturer: device.manufacturerName,
+        model: device.productName,
+        serial: device.serialNumber
+    }
+}
 
-    async findPrinters(): Promise<chrome.usb.Device[]> {
-        return getDevices({
-            filters: [{ interfaceClass: 7 }]
-        });
+export class USBPrintService implements PrintService {
+
+    supportsConnection(connection: PrinterConnectionInfo): boolean {
+        return connection.type === "usb";
     }
 
-    getUserSelectedPrinters(multiple: boolean): Promise<chrome.usb.Device[]> {
-        return getUserSelectedDevices({
-            multiple,
-            filters: [{ interfaceClass: 7 }]
-        });
+    async discoverDevices(): Promise<Printer[]> {
+        return (await getDevices({ filters: [{ interfaceClass: 7 }] })).map(usbDeviceToPrinter);
     }
 
-    async print(jobs: IPrintJob[], printer: chrome.usb.Device) {
+    async promptForDevices(multiple: boolean = false): Promise<Printer[]> {
+        return (await getUserSelectedDevices({ multiple, filters: [{ interfaceClass: 7 }] })).map(usbDeviceToPrinter);
+    }
+
+    async print(job: PrintJob): Promise<void> {
+
+        // Get all connected printers
+        const printers = await getDevices({ filters: [{ interfaceClass: 7 }] });
+        if(printers.length === 0) throw new Error("No printer devices found. Is your printer plugged in and turned on?");
+
+        // Find the one to print to
+        const printer = printers.find(p => p.serialNumber === job.connection.connection);
+        if(!printer) throw new Error(`Printer ${  job.connection.connection } could not be found. Is it plugged in and turned on?`);
 
         // Open a connection to the device
         const connection = await openDevice(printer);
@@ -48,16 +65,13 @@ export class USBPrintService {
             try {
 
                 // For each job
-                for (const job of jobs) {
-
-                    // Encode the data
-                    const dataBuffer = new TextEncoder().encode(job.printData).buffer;
+                for (const document of job.documents) {
 
                     // Send it over the USB interface
                     const result = await bulkTransfer(connection, {
                         direction: "out",
                         endpoint: printEndpoint.address,
-                        data: dataBuffer,
+                        data: document.data,
                         timeout: 10000
                     });
 
@@ -67,15 +81,19 @@ export class USBPrintService {
 
             }
             finally {
+
+                // Release the interface
                 await releaseInterface(connection, printInterface.interfaceNumber);
+
             }
 
         }
         finally {
-            await closeDevice(connection);
-        }
 
+            // Close the device
+            await closeDevice(connection);
+
+        }
     }
 
 }
-

@@ -1,9 +1,11 @@
 import { App } from "./spa";
 import { SettingsService, Setting, SettingTypeMap } from "./SettingsService";
 import { SettingsPage, SetupPage, LoadingScreen, CheckinPage } from "./pages";
-import { ZebraPrintService } from "./printing/ZebraPrintService";
 import { CheckinLabelService, CheckinLabelData } from "./CheckinLabelService";
+import { TCPPrintService } from "./printing/TCPPrintService";
+import { USBPrintService } from "./printing/USBPrintService";
 import * as Comlink from 'comlink';
+import { PrintService } from "./printing/PrintService";
 
 export class MainApp extends App {
 
@@ -15,7 +17,10 @@ export class MainApp extends App {
     /**
      * The main print service
      */
-    public printService = new ZebraPrintService();
+    public printServices = [
+        new TCPPrintService(),
+        new USBPrintService()
+    ];
 
     /**
      * The checkin label service
@@ -27,7 +32,7 @@ export class MainApp extends App {
      */
     public appApi = new AppApi(
         this,
-        this.printService,
+        this.printServices,
         this.settingsService,
         this.checkinLabelService
     );
@@ -63,7 +68,7 @@ export class AppApi {
 
     constructor(
         private mainApp: MainApp,
-        private printService: ZebraPrintService,
+        private printServices: PrintService[],
         private settingsService: SettingsService,
         private checkinLabelService: CheckinLabelService
     ) { }
@@ -72,7 +77,14 @@ export class AppApi {
 
         const printJobs = await this.checkinLabelService.getAndMergeLabels(labels);
 
-        await this.printService.printMultiple(printJobs);
+        for (const job of printJobs) {
+
+            const service = this.printServices.find(s => s.supportsConnection(job.connection));
+            if(!service) {
+                throw new Error(`There is no print service available for "${job.connection.type}" connections`);
+            }
+            await service.print(job);
+        }
 
         return;
 
