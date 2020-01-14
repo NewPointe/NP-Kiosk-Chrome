@@ -36,11 +36,20 @@ interface Package {
 }
 
 /**
+ * Partial typedef for a manifest.json file
+ */
+interface Manifest {
+    name: string;
+    version: string;
+    permissions: Array<string | { [key: string]: any }>
+}
+
+/**
  * Reads a json file from disk
  * @param path The path to the JSON file
  */
 async function readJson<T>(path: string): Promise<T> {
-    return JSON.parse(await fs.promises.readFile(path, "utf-8")) as T;
+    return jsonc.parse(await fs.promises.readFile(path, "utf-8")) as T;
 }
 
 /** Array of functions to run on quit. */
@@ -101,7 +110,27 @@ export async function sync_manifest_version() {
     const newManifestString = jsonc.applyEdits(manifestString, edits);
     await fs.promises.writeFile('./public/manifest.json', newManifestString, "utf-8");
 }
-sync_manifest_version.description = "Cleans the build folders";
+sync_manifest_version.description = "Syncs the app's manifest.json version to match package.json";
+
+/**
+ * Syncs known usb devices into manifest.json
+ */
+export async function sync_usb_ids() {
+    const usbDevices = await readJson<any[]>("./src/usbDevices.jsonc");
+    const manifestString = await fs.promises.readFile('./public/manifest.json', "utf-8");
+    const manifestJson = jsonc.parse(manifestString) as Manifest;
+    let usbDevicesIndex = manifestJson.permissions.findIndex(p => typeof p === 'object' && 'usbDevices' in p);
+    let edits;
+    if(usbDevicesIndex === -1) {
+        edits = jsonc.modify(manifestString, ["permissions", usbDevicesIndex], { usbDevices }, { formattingOptions: {} });
+    }
+    else {
+        edits = jsonc.modify(manifestString, ["permissions", usbDevicesIndex, "usbDevices"], usbDevices, { formattingOptions: {} });
+    }
+    const newManifestString = jsonc.applyEdits(manifestString, edits);
+    await fs.promises.writeFile('./public/manifest.json', newManifestString, "utf-8");
+}
+sync_manifest_version.description = "Syncs known usb devices into manifest.json";
 
 /**
  * Compiles TypeScript files using webpack

@@ -1,0 +1,24 @@
+[
+
+    // Generic Zebra Printer
+    { "vendorId": "0a5f", "interfaceClass": 7 },
+
+    // LP 2844
+    { "vendorId": "0a5f", "productId": "0009" },
+
+    // GK420t
+    { "vendorId": "0a5f", "productId": "0081" },
+
+    // GX420d
+    { "vendorId": "0a5f", "productId": "0084" },
+
+    // HC100
+    { "vendorId": "0a5f", "productId": "008b" },
+
+    // ZP450
+    { "vendorId": "0a5f", "productId": "008c" },
+
+    // GC420d
+    { "vendorId": "0a5f", "productId": "00d1" }
+
+]

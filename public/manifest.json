@@ -24,9 +24,35 @@
         "usb",
         {
             "usbDevices": [
-                { "vendorId": 2655, "interfaceClass": 7 },
-                { "vendorId": 2655, "productId": 132 }
-            ]
+				{
+					"vendorId": "0a5f",
+					"interfaceClass": 7
+				},
+				{
+					"vendorId": "0a5f",
+					"productId": "0009"
+				},
+				{
+					"vendorId": "0a5f",
+					"productId": "0081"
+				},
+				{
+					"vendorId": "0a5f",
+					"productId": "0084"
+				},
+				{
+					"vendorId": "0a5f",
+					"productId": "008b"
+				},
+				{
+					"vendorId": "0a5f",
+					"productId": "008c"
+				},
+				{
+					"vendorId": "0a5f",
+					"productId": "00d1"
+				}
+			]
         }
     ],
     "kiosk_enabled": true,
@@ -57,5 +83,37 @@
             },
             "description": "Shows the kiosk settings"
         }
-    }
+	},
+	"usbDevices": [
+		[
+			{
+				"vendorId": "0a5f",
+				"interfaceClass": 7
+			},
+			{
+				"vendorId": "0a5f",
+				"productId": "0009"
+			},
+			{
+				"vendorId": "0a5f",
+				"productId": "0081"
+			},
+			{
+				"vendorId": "0a5f",
+				"productId": "0084"
+			},
+			{
+				"vendorId": "0a5f",
+				"productId": "008b"
+			},
+			{
+				"vendorId": "0a5f",
+				"productId": "008c"
+			},
+			{
+				"vendorId": "0a5f",
+				"productId": "00d1"
+			}
+		]
+	]
 }
