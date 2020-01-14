@@ -2918,4 +2918,200 @@ declare namespace chrome.usb {
      */
     export function closeDevice(handle: ConnectionHandle, callback?: (handle: ConnectionHandle) => void): void;
 
+    /**
+     * Since Chrome 42.
+     *
+     * Select a device configuration.
+     *
+     * This function effectively resets the device by selecting one of the device's available configurations. Only configuration values greater than 0 are valid however some buggy devices have a working configuration 0 and so this value is allowed.
+     * @param handle Since Chrome 41. An open connection to the device.
+     * @param configurationValue Since Chrome 41.
+     * @param callback
+     */
+    export function setConfiguration(handle: ConnectionHandle, configurationValue: number, callback: () => void): void;
+
+    /**
+     * Since Chrome 39.
+     *
+     * Gets the configuration descriptor for the currently selected configuration.
+     * @param handle An open connection to the device.
+     * @param callback
+     */
+    export function getConfiguration(handle: ConnectionHandle, callback: (config: ConfigDescriptor) => void): void;
+
+    /**
+     * Lists all interfaces on a USB device.
+     * @param handle An open connection to the device.
+     * @param interfaceNumber The interface to be claimed.
+     * @param callback
+     */
+    export function listInterfaces(handle: ConnectionHandle, callback: (descriptors: InterfaceDescriptor[]) => void): void;
+
+    /**
+     * Claims an interface on a USB device. Before data can be transfered to an interface or associated endpoints the interface must be claimed. Only one connection handle can claim an interface at any given time. If the interface is already claimed, this call will fail.
+     *
+     * [releaseInterface](https://developer.chrome.com/apps/usb#method-releaseInterface) should be called when the interface is no longer needed.
+     * @param handle An open connection to the device.
+     * @param interfaceNumber The interface to be claimed.
+     * @param callback
+     */
+    export function claimInterface(handle: ConnectionHandle, interfaceNumber: number, callback: () => void): void;
+
+    /**
+     * Releases a claimed interface.
+     * @param handle An open connection to the device.
+     * @param interfaceNumber The interface to be released.
+     * @param callback
+     */
+    export function releaseInterface(handle: ConnectionHandle, interfaceNumber: number, callback: () => void): void;
+
+    /**
+     * Selects an alternate setting on a previously claimed interface.
+     * @param handle An open connection to the device.
+     * @param interfaceNumber The interface to configure.
+     * @param alternateSetting The alternate setting to configure.
+     * @param callback
+     */
+    export function setInterfaceAlternateSetting(handle: ConnectionHandle, interfaceNumber: number, alternateSetting: number, callback: () => void): void;
+
+    interface _ControlTransferInfo_Common {
+
+
+        /**
+         * The transfer target. The target given by `index` must be claimed if `"interface"` or `"endpoint"`.
+         */
+        recipient: "device" | "interface" | "endpoint" | "other";
+
+        /**
+         * The request type.
+         */
+        requestType: "standard" | "class" | "vendor" | "reserved";
+
+        /**
+         * The `bRequest` field, see *Universal Serial Bus Specification Revision 1.1* § 9.3.
+         */
+        request: number;
+
+        /**
+         * The `wValue` field, see *Ibid*.
+         */
+        value: number;
+
+        /**
+         * The `wIndex` field, see *Ibid*.
+         */
+        index: number;
+
+        /**
+         * Since Chrome 43.
+         *
+         * Request timeout (in milliseconds). The default value `0` indicates no timeout.
+         */
+        timeout?: number;
+    }
+
+    interface _ControlTransferInfo_In extends _ControlTransferInfo_Common {
+
+        /**
+         * The transfer direction (`"in"` or `"out"`).
+         */
+        direction: "in";
+
+        /**
+         * The maximum number of bytes to receive (required only by input transfers).
+         */
+        length: number;
+
+    }
+
+    interface _ControlTransferInfo_Out extends _ControlTransferInfo_Common {
+
+        /**
+         * The transfer direction (`"in"` or `"out"`).
+         */
+        direction: "out";
+
+        /**
+         * The data to transmit (required only by output transfers).
+         */
+        data: ArrayBuffer;
+
+    }
+
+    type _ControlTransferInfo = _ControlTransferInfo_In | _ControlTransferInfo_Out;
+
+    /**
+     * Performs a control transfer on the specified device.
+     *
+     * Control transfers refer to either the device, an interface or an endpoint. Transfers to an interface or endpoint require the interface to be claimed.
+     * @param handle An open connection to the device.
+     * @param transferInfo
+     * @param callback
+     */
+    export function controlTransfer(handle: ConnectionHandle, transferInfo: _ControlTransferInfo, callback: (info: TransferResultInfo) => void): void;
+
+    /**
+     * Performs a bulk transfer on the specified device.
+     * @param handle An open connection to the device.
+     * @param transferInfo The transfer parameters.
+     * @param callback
+     */
+    export function bulkTransfer(handle: ConnectionHandle, transferInfo: GenericTransferInfo, callback: (info: TransferResultInfo) => void): void;
+
+    /**
+     * Performs a interrupt transfer on the specified device.
+     * @param handle An open connection to the device.
+     * @param transferInfo The transfer parameters.
+     * @param callback
+     */
+    export function interruptTransfer(handle: ConnectionHandle, transferInfo: GenericTransferInfo, callback: (info: TransferResultInfo) => void): void;
+
+    interface _IsochronousTransferInfo {
+
+        /**
+         * Transfer parameters. The transfer length or data buffer specified in this parameter block is split along `packetLength` boundaries to form the individual packets of the transfer.
+         */
+        transferInfo: GenericTransferInfo;
+
+        /**
+         * The total number of packets in this transfer.
+         */
+        packets: number;
+
+        /**
+         * The length of each of the packets in this transfer.
+         */
+        packetLength: number;
+
+    }
+
+    /**
+     * Performs a isochronous transfer on the specified device.
+     * @param handle An open connection to the device.
+     * @param transferInfo The transfer parameters.
+     * @param callback
+     */
+    export function isochronousTransfer(handle: ConnectionHandle, transferInfo: _IsochronousTransferInfo, callback: (info: TransferResultInfo) => void): void;
+
+    /**
+     * Tries to reset the USB device. If the reset fails, the given connection handle will be closed and the USB device will appear to be disconnected then reconnected. In this case `getDevices` or `findDevices` must be called again to acquire the device.
+     * @param handle A connection handle to reset.
+     * @param callback
+     */
+    export function resetDevice(handle: ConnectionHandle, callback: (success: boolean) => void): void;
+
+    /**
+     * Since Chrome 42.
+     *
+     * Event generated when a device is added to the system. Events are only broadcast to apps and extensions that have permission to access the device. Permission may have been granted at install time, when the user accepted an optional permission (see [permissions.request](https://developer.chrome.com/apps/permissions#method-request)), or through [getUserSelectedDevices](https://developer.chrome.com/apps/usb#method-getUserSelectedDevices).
+     */
+    export const onDeviceAdded: _EventHolder<(device: Device) => void>;
+
+    /**
+     * Since Chrome 42.
+     *
+     * Event generated when a device is removed from the system. See [onDeviceAdded](https://developer.chrome.com/apps/usb#event-onDeviceAdded) for which events are delivered.
+     */
+    export const onDeviceRemoved: _EventHolder<(device: Device) => void>;
+
 }
