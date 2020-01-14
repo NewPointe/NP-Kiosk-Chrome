@@ -20,20 +20,31 @@
         "webview",
         "power",
         "storage",
-        "https://*/"
+        "https://*/",
+        "usb",
+        {
+            "usbDevices": [
+                { "vendorId": 2655, "interfaceClass": 7 },
+                { "vendorId": 2655, "productId": 132 }
+            ]
+        }
     ],
     "kiosk_enabled": true,
     "webview": {
         "partitions": [
             {
                 "name": "rockcheckin",
-                "accessible_resources": ["scripts/client-api.js"]
+                "accessible_resources": [
+                    "scripts/client-api.js"
+                ]
             }
         ]
     },
     "sockets": {
         "tcp": {
-            "connect": [ "*" ]
+            "connect": [
+                "*"
+            ]
         }
     },
     "storage": {
@@ -41,10 +52,10 @@
     },
     "commands": {
         "show-settings": {
-          "suggested_key": {
-            "default": "Ctrl+Shift+Period"
-          },
-          "description": "Shows the kiosk settings"
+            "suggested_key": {
+                "default": "Ctrl+Shift+Period"
+            },
+            "description": "Shows the kiosk settings"
         }
     }
 }
