@@ -12,31 +12,14 @@ export class Client {
 
     public appApi?: Comlink.Remote<AppApi>;
 
-
     constructor() {
-
         window.addEventListener('message', this.handleWindowMessage.bind(this));
-
     }
 
     private handleWindowMessage(event: MessageEvent) {
-
-        console.log("Recieved Message:");
-        console.log(event.data);
-
-        // Make sure it's a valid message
-        if (event.data) {
-
-            // Check if it's an init message
-            if(event.data === "NP_CHECKIN_INIT_API") {
-
-
-                this.appApi = Comlink.wrap<AppApi>(Comlink.windowEndpoint(event.source as Window, undefined, event.origin));
-
-            }
-
+        if(event.data === "NP_CHECKIN_INIT_API") {
+            this.appApi = Comlink.wrap<AppApi>(Comlink.windowEndpoint(event.source as Window, undefined, event.origin));
         }
-
     }
 
 }

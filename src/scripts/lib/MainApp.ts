@@ -53,8 +53,6 @@ export class MainApp extends App {
     }
 
     public bindMessaging(peerWindow: Window, peerOrigin: string) {
-        console.log("Binding to window");
-        console.log(peerOrigin);
         Comlink.expose(this.appApi, Comlink.windowEndpoint(peerWindow, undefined, peerOrigin));
         peerWindow.postMessage("NP_CHECKIN_INIT_API", peerOrigin);
     }
