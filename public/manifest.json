@@ -87,37 +87,5 @@
             },
             "description": "Shows the kiosk settings"
         }
-	},
-	"usbDevices": [
-		[
-			{
-				"vendorId": "0a5f",
-				"interfaceClass": 7
-			},
-			{
-				"vendorId": "0a5f",
-				"productId": "0009"
-			},
-			{
-				"vendorId": "0a5f",
-				"productId": "0081"
-			},
-			{
-				"vendorId": "0a5f",
-				"productId": "0084"
-			},
-			{
-				"vendorId": "0a5f",
-				"productId": "008b"
-			},
-			{
-				"vendorId": "0a5f",
-				"productId": "008c"
-			},
-			{
-				"vendorId": "0a5f",
-				"productId": "00d1"
-			}
-		]
-	]
+	}
 }
