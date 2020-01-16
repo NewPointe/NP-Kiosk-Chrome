@@ -6,6 +6,9 @@ function getSplitAddress(address: string) {
     return { ip, port: +port };
 }
 
+/**
+ * A print service that can communicate with a printer over a TCP network connection.
+ */
 export class TCPPrintService implements PrintService {
 
     supportsConnection(connection: PrinterConnectionInfo): boolean {

@@ -21,6 +21,9 @@ function usbDeviceToPrinter(device: chrome.usb.Device): Printer {
     }
 }
 
+/**
+ * A print service that can communicate with a printer over a USB connection.
+ */
 export class USBPrintService implements PrintService {
 
     supportsConnection(connection: PrinterConnectionInfo): boolean {

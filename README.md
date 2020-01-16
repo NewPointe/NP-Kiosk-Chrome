@@ -1,7 +1,10 @@
+
+> Yesterday (Jan 15, 2020) Google announced that they are [ending support of Chrome Apps on Chrome OS](https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html). Because of this I've decided to halt this project and start working on a Chrome OS compatable Android version of this project which you can find [here](https://github.com/NewPointe/Rock-Checkin-Android/).
+
+
 <div align="center">
 
 # Rock-Checkin-Chrome
-
 
 [![Discord Server][chat-badge]][chat-link]
 [![License][license-badge]][license-link]
@@ -12,9 +15,17 @@
 
 </div>
 
-Rock-Checkin-Chrome is a [Chromebook](https://www.google.com/chromebook/) app for the [Rock RMS](https://www.rockrms.com/) Check-in system. It is based off of the official [Rock Check-in](https://apps.apple.com/us/app/rock-check-in/id879253336) iOS app and aims to maintain feature parity.
+Rock-Checkin-Chrome is a [Chromebook](https://www.google.com/chromebook/) Kiosk app for the [Rock RMS](https://www.rockrms.com/) Check-in system. It is based off of the official [Rock Check-in](https://apps.apple.com/us/app/rock-check-in/id879253336) iOS app and aims to maintain feature parity.
 
-While it should work on any chromebook device, this app was designed for the [Acer Chromebook Tab 10](https://www.acer.com/ac/en/US/content/series/acerchromebooktab10) - a cheaper and easier to manage alternative to the iPad with a very similar form factor (It even fits in our old iPad stands! ...with some minor modifications).
+Features:
+- Configurable label caching
+- Local network printing
+- USB printing (Comming soon)
+- Bluetooth printing (Comming soon)
+- Serial printing (Comming soon)
+- Managed Configuration support
+
+While it should work on any Chrome OS device, this app was designed for the [Acer Chromebook Tab 10](https://www.acer.com/ac/en/US/content/series/acerchromebooktab10) - a cheaper and easier to manage alternative to the iPad with a very similar form factor (It even fits in our old iPad stands! ...with some minor modifications).
 
 ## Building
 
